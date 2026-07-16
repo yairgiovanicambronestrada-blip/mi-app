@@ -1,10 +1,17 @@
 pipeline {
-    agent any
+    // Usamos un agente Docker con Node.js y montamos el socket de Docker del host
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
+        }
+    }
 
     environment {
-        GITHUB_USER = 'yairgiovanicambronestrada-blip'   // ← CAMBIA A TU USUARIO
+        // ⚠️ CAMBIA 'tu-usuario-de-github' y 'tu-usuario/mi-app' por los tuyos
+        GITHUB_USER = 'DarkYeah'
         REGISTRY = 'ghcr.io'
-        IMAGE_NAME = 'yairgiovanicambronestrada-blip/mi-app'  // ← CAMBIA A TU USUARIO
+        IMAGE_NAME = 'yairgiovanicambronestrada-blip/mi-app'
         COMMIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         BUILD_TIMESTAMP = sh(script: 'date +%Y%m%d-%H%M%S', returnStdout: true).trim()
         IMAGE_TAG_LATEST = "${REGISTRY}/${IMAGE_NAME}:latest"
@@ -16,6 +23,8 @@ pipeline {
         stage('Prepare') {
             steps {
                 echo '🔧 Preparando entorno...'
+                // Instalamos Docker CLI dentro del contenedor (para poder usar el comando docker)
+                sh 'apk add --no-cache docker-cli'
                 sh 'docker --version'
                 sh 'node --version'
                 sh 'npm --version'
@@ -47,7 +56,7 @@ pipeline {
 
         stage('Push to Registry') {
             when {
-                branch 'main'   // ← Si tu rama es 'master', cámbialo aquí
+                branch 'main'   // Si tu rama es 'master', cámbialo aquí
             }
             steps {
                 echo '📤 Publicando imagen en GitHub Container Registry...'
@@ -90,6 +99,9 @@ pipeline {
     post {
         success { echo '🎉 Pipeline completado exitosamente!' }
         failure { echo '❌ Pipeline falló!' }
-        cleanup { sh 'docker image prune -f' }
+        cleanup {
+            echo '🧹 Limpiando recursos...'
+            sh 'docker image prune -f || true'  // El '|| true' evita que falle si no hay nada que limpiar
+        }
     }
 }

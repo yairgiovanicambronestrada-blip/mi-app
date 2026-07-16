@@ -8,8 +8,8 @@ pipeline {
     }
 
     environment {
-        // ⚠️ CAMBIA 'tu-usuario-de-github' y 'tu-usuario/mi-app' por los tuyos
-        GITHUB_USER = 'DarkYeah'
+      
+        GITHUB_USER = 'yairgiovanicambronestrada-blip'
         REGISTRY = 'ghcr.io'
         IMAGE_NAME = 'yairgiovanicambronestrada-blip/mi-app'
         COMMIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()

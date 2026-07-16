@@ -78,9 +78,7 @@ pipeline {
         }
 
         stage('Verify Published Image') {
-            when {
-                branch 'main'
-            }
+           when { branch '*' }
             steps {
                 echo '✅ Verificando imagen publicada...'
                 script {
